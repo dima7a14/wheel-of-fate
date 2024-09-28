@@ -59,9 +59,9 @@ export async function initWheel(el) {
 
 	el.appendChild(app.canvas);
 
-	setTimeout(() => {
-		spin();
-	}, 2000);
+	// setTimeout(() => {
+	// 	spin();
+	// }, 2000);
 
 	app.ticker.add(() => {
 		if (currentAngle < angle) {
