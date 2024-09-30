@@ -1,52 +1,36 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.js" defer></script>
-  </head>
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="stylesheet" href="/src/styles.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Tauri App</title>
+		<script type="module" src="/src/main.js" defer></script>
+	</head>
 
-  <body>
-    <div class="container">
-      <div id="wheel"></div>
-      <div id="legend">
-        <h1>Legend</h1>
-        <form class="form" id="add_choice">
-          <div class="form-line">
-            <label for="name">Name</label>
-            <input type="text" name="name" value="" required />
-          </div>
-          <div class="form-line">
-            <button type="submit" class="add-btn">Add</button>
-          </div>
-        </form>
-        <ul id="choices" class="choices">
-          <li>
-            <span>1.</span>
-            <span>Noita</span>
-            <button type="button" class="remove-choice">Remove</button>
-          </li>
-          <li>
-            <span>2.</span>
-            <span>Curse of the Dead Gods</span>
-            <button type="button" class="remove-choice">Remove</button>
-          </li>
-          <li>
-            <span>3.</span>
-            <span>Crypt of the Necrodancer</span>
-            <button type="button" class="remove-choice">Remove</button>
-          </li>
-        </ul>
-      </div>
+	<body>
+		<div class="container">
+			<div id="wheel"></div>
+			<div id="legend">
+				<h1>Legend</h1>
+				<form class="form" id="add_choice">
+					<div class="form-line">
+						<label for="name">Name</label>
+						<input type="text" name="name" value="" required />
+					</div>
+					<div class="form-line">
+						<button type="submit" class="add-btn">Add</button>
+					</div>
+				</form>
+				<ul id="choices" class="choices"></ul>
+			</div>
 
-      <!-- <form class="row" id="greet-form">
+			<!-- <form class="row" id="greet-form">
         <input id="greet-input" placeholder="Enter a name..." />
         <button type="submit">Greet</button>
       </form>
 
       <p id="greet-msg"></p> -->
-    </div>
-  </body>
+		</div>
+	</body>
 </html>

@@ -2,18 +2,6 @@ import * as PIXI from "pixi.js";
 
 import { degreesToRadians, randomBetween } from "./utils";
 
-const choices = [
-	"The Binding of Isaac",
-	"Crypt of the Necro Dancer",
-	"Curse of the Dead Gods",
-	"Dead Cells",
-	"Dead Estate",
-	"Nuclear Throne",
-	"Invisible Inc.",
-	"Risk of Rain 2",
-	"Enter The Gungeon",
-	"Noita",
-];
 const colors = [
 	"red",
 	"blue",
@@ -25,7 +13,7 @@ const colors = [
 	"orange",
 ];
 
-export async function initWheel(el) {
+export async function initWheel(el, options) {
 	const { width, height } = el.getBoundingClientRect();
 	console.log("Initializing Wheel", {
 		el,
@@ -45,7 +33,7 @@ export async function initWheel(el) {
 	app.stage.eventMode = "static";
 	app.stage.hitArea = app.screen;
 
-	const wheel = new Wheel({ width, height });
+	const wheel = new Wheel({ width, height, choices: options });
 
 	app.stage.addChild(wheel);
 
@@ -73,7 +61,7 @@ export async function initWheel(el) {
 }
 
 class Wheel extends PIXI.Container {
-	constructor({ width, height }) {
+	constructor({ width, height, choices }) {
 		super();
 		const radius = (Math.min(width, height) * 0.9) / 2;
 		const delta = degreesToRadians(360 / choices.length);
@@ -91,7 +79,7 @@ class Wheel extends PIXI.Container {
 			container.addChild(choice);
 
 			const label = createLabel(
-				choices[i],
+				choices[i].name,
 				x,
 				y,
 				(i * delta + (i + 1) * delta) / 2,

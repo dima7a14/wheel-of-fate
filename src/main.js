@@ -18,6 +18,7 @@
 // });
 
 import { initWheel } from "./wheel";
+import { Form } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 
 (async () => {
@@ -26,5 +27,40 @@ import { WHEEL_ELEMENT_ID } from "./config";
 		throw new Error("Not found element for Wheel!");
 	}
 
-	await initWheel(el);
+	const initOptions = [
+		{
+			name: "The Binding of Isaac",
+		},
+		{
+			name: "Crypt of the Necro Dancer",
+		},
+		{
+			name: "Curse of the Dead Gods",
+		},
+		{
+			name: "Dead Cells",
+		},
+		{
+			name: "Dead Estate",
+		},
+		{
+			name: "Nuclear Throne",
+		},
+		{
+			name: "Invisible Inc.",
+		},
+		{
+			name: "Risk of Rain 2",
+		},
+		{
+			name: "Enter the Gungeon",
+		},
+		{
+			name: "Noita",
+		},
+	];
+
+	const form = new Form(initOptions);
+
+	await initWheel(el, initOptions);
 })();
