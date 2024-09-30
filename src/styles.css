@@ -88,9 +88,40 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   appearance: none;
   background-color: #eaeaea;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 1rem;
   border-radius: 4px;
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.choices {
+  margin: 1rem 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  list-style: none;
+}
+
+.choices li {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 1rem;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.remove-choice {
+  appearance: none;
+  outline: none;
+  border: none;
+  background-color: #f54646;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  color: #eaeaea;
+  justify-self: flex-end;
 }

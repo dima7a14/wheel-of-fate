@@ -13,7 +13,7 @@
       <div id="wheel"></div>
       <div id="legend">
         <h1>Legend</h1>
-        <form class="form">
+        <form class="form" id="add_choice">
           <div class="form-line">
             <label for="name">Name</label>
             <input type="text" name="name" value="" required />
@@ -22,6 +22,23 @@
             <button type="submit" class="add-btn">Add</button>
           </div>
         </form>
+        <ul id="choices" class="choices">
+          <li>
+            <span>1.</span>
+            <span>Noita</span>
+            <button type="button" class="remove-choice">Remove</button>
+          </li>
+          <li>
+            <span>2.</span>
+            <span>Curse of the Dead Gods</span>
+            <button type="button" class="remove-choice">Remove</button>
+          </li>
+          <li>
+            <span>3.</span>
+            <span>Crypt of the Necrodancer</span>
+            <button type="button" class="remove-choice">Remove</button>
+          </li>
+        </ul>
       </div>
 
       <!-- <form class="row" id="greet-form">
