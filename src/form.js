@@ -1,4 +1,5 @@
 import { FORM_ID, OPTIONS_LIST_ID } from "./config";
+import { generateId } from "./utils";
 
 export class Form {
 	#options = [];
@@ -19,9 +20,13 @@ export class Form {
 		form.addEventListener("submit", (event) => {
 			event.preventDefault();
 			const data = new FormData(form);
-			const newOption = { name: data.get("name") };
+			const newOption = {
+				id: generateId(),
+				name: data.get("name"),
+			};
 			this.#options.push(newOption);
 			this.#update();
+			form.reset();
 		});
 	}
 

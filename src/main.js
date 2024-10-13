@@ -20,6 +20,7 @@
 import { initWheel } from "./wheel";
 import { Form } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
+import { generateId } from "./utils";
 
 (async () => {
 	const el = document.getElementById(WHEEL_ELEMENT_ID);
@@ -29,33 +30,43 @@ import { WHEEL_ELEMENT_ID } from "./config";
 
 	const initOptions = [
 		{
+			id: generateId(),
 			name: "The Binding of Isaac",
 		},
 		{
+			id: generateId(),
 			name: "Crypt of the Necro Dancer",
 		},
 		{
+			id: generateId(),
 			name: "Curse of the Dead Gods",
 		},
 		{
+			id: generateId(),
 			name: "Dead Cells",
 		},
 		{
+			id: generateId(),
 			name: "Dead Estate",
 		},
 		{
+			id: generateId(),
 			name: "Nuclear Throne",
 		},
 		{
+			id: generateId(),
 			name: "Invisible Inc.",
 		},
 		{
+			id: generateId(),
 			name: "Risk of Rain 2",
 		},
 		{
+			id: generateId(),
 			name: "Enter the Gungeon",
 		},
 		{
+			id: generateId(),
 			name: "Noita",
 		},
 	];

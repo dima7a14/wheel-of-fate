@@ -61,8 +61,16 @@ export async function initWheel(el, options) {
 }
 
 class Wheel extends PIXI.Container {
+	#choices = [];
+	#children = new Map();
+	#width = 0;
+	#height = 0;
+
 	constructor({ width, height, choices }) {
 		super();
+		this.#width = width;
+		this.#height = height;
+		this.#choices = choices;
 		const radius = (Math.min(width, height) * 0.9) / 2;
 		const delta = degreesToRadians(360 / choices.length);
 		const x = width / 2;
@@ -100,6 +108,35 @@ class Wheel extends PIXI.Container {
 
 	rotate(rotation) {
 		this.rotation = rotation;
+	}
+
+	#addChoice(choice, x, y) {
+		// const index = this.#choices.length;
+		// const color = colors[index % colors.length];
+		// const delta = degreesToRadians()
+		// const container = new PIXI.Container();
+		// const choiceGraphics = new PIXI.Graphics().moveTo()
+		if (this.#children.has(choice.id)) {
+			throw new Error("The choice already exists!", choice);
+		}
+
+		const container = new PIXI.Container();
+		const choiceBg = new PIXI.Graphics();
+		const choiceLabel = createLab;
+		// TODO: move choice to a separate components with all children
+	}
+
+	#renderChoices() {
+		const radius = (Math.min(this.#width, this.#height) * 0.9) / 2;
+		const delta = degreesToRadians(360 / this.#choices.length);
+		const x = this.#width / 2;
+		const y = this.#height / 2;
+
+		for (let index = 0; index < this.#choices.length; index++) {
+			const color = colors[index % colors.length];
+			const child = this.#children.get(choice.id);
+			// Retrieve child components
+		}
 	}
 }
 
