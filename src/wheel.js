@@ -33,9 +33,13 @@ export async function initWheel(el, options) {
 	app.stage.eventMode = "static";
 	app.stage.hitArea = app.screen;
 
-	const wheel = new Wheel({ width, height, choices: options });
+	const wheel = new Wheel({ width, height });
 
-	app.stage.addChild(wheel);
+	options.forEach((option) => {
+		wheel.addChoice(option);
+	});
+
+	app.stage.addChild(wheel.container);
 
 	let angle = 0;
 	let currentAngle = 0;
@@ -52,124 +56,142 @@ export async function initWheel(el, options) {
 	// }, 2000);
 
 	app.ticker.add(() => {
-		if (currentAngle < angle) {
-			const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
-			currentAngle = Math.min(angle, currentAngle + speed);
-			wheel.rotate(speed);
-		}
+		// if (currentAngle < angle) {
+		// 	const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
+		// 	currentAngle = Math.min(angle, currentAngle + speed);
+		// 	wheel.rotate(speed);
+		// }
+		wheel.render();
 	});
 }
 
-class Wheel extends PIXI.Container {
-	#choices = [];
-	#children = new Map();
-	#width = 0;
-	#height = 0;
+class Wheel {
+	constructor({ width, height }) {
+		this.width = width;
+		this.height = height;
+		this.container = new PIXI.Container();
+		this.choices = [];
+	}
 
-	constructor({ width, height, choices }) {
-		super();
-		this.#width = width;
-		this.#height = height;
-		this.#choices = choices;
-		const radius = (Math.min(width, height) * 0.9) / 2;
-		const delta = degreesToRadians(360 / choices.length);
-		const x = width / 2;
-		const y = height / 2;
+	get radius() {
+		return (Math.min(this.width, this.height) * 0.9) / 2;
+	}
 
-		for (let i = 0; i < choices.length; i++) {
-			const color = colors[i > colors.length - 1 ? i % colors.length : i];
-			const container = new PIXI.Container();
-			const choice = new PIXI.Graphics()
-				.moveTo(x, y)
-				.arc(x, y, radius, i * delta, (i + 1) * delta)
-				.fill(color);
+	get delta() {
+		return degreesToRadians(360 / this.choices.length);
+	}
 
-			container.addChild(choice);
+	get center() {
+		return { x: this.width / 2, y: this.height / 2 };
+	}
 
-			const label = createLabel(
-				choices[i].name,
+	addChoice(choice) {
+		const choiceComponent = new Choice(choice);
+
+		this.choices.push(choiceComponent);
+		this.container.addChild(choiceComponent.container);
+	}
+
+	removeChoice(id) {
+		const index = this.choices.find((c) => c.id === id);
+
+		if (index === -1) {
+			return;
+		}
+
+		const choice = this.choices.splice(index, 1);
+
+		choice.destroy();
+		this.container.removeChildAt(index);
+	}
+
+	render() {
+		this.choices.forEach((choice, index) => {
+			const color = colors[index % colors.length];
+			const { x, y } = this.center;
+			const startAngle = index * this.delta;
+			const endAngle = (index + 1) * this.delta;
+
+			choice.render({
 				x,
 				y,
-				(i * delta + (i + 1) * delta) / 2,
-				radius,
-			);
-
-			container.addChild(label);
-
-			container.zIndex = 2;
-
-			this.addChild(container);
-		}
-
-		this.rotation = 0;
-		this.pivot = { x, y };
-		this.position = { x, y };
-	}
-
-	rotate(rotation) {
-		this.rotation = rotation;
-	}
-
-	#addChoice(choice, x, y) {
-		// const index = this.#choices.length;
-		// const color = colors[index % colors.length];
-		// const delta = degreesToRadians()
-		// const container = new PIXI.Container();
-		// const choiceGraphics = new PIXI.Graphics().moveTo()
-		if (this.#children.has(choice.id)) {
-			throw new Error("The choice already exists!", choice);
-		}
-
-		const container = new PIXI.Container();
-		const choiceBg = new PIXI.Graphics();
-		const choiceLabel = createLab;
-		// TODO: move choice to a separate components with all children
-	}
-
-	#renderChoices() {
-		const radius = (Math.min(this.#width, this.#height) * 0.9) / 2;
-		const delta = degreesToRadians(360 / this.#choices.length);
-		const x = this.#width / 2;
-		const y = this.#height / 2;
-
-		for (let index = 0; index < this.#choices.length; index++) {
-			const color = colors[index % colors.length];
-			const child = this.#children.get(choice.id);
-			// Retrieve child components
-		}
+				startAngle,
+				endAngle,
+				color,
+				radius: this.radius,
+			});
+		});
 	}
 }
 
-function createLabel(label, x, y, angle, radius) {
-	const container = new PIXI.Container();
-	const fontSize = 24;
-	const style = new PIXI.TextStyle({
-		fontFamily: "Arial",
-		fontSize,
-		fontWeight: 700,
-		fill: 0xffffff,
-		dropShadow: {
-			alpha: 1,
-			angle: -60,
-			blur: 1,
-			color: 0x000000,
-			distance: 1,
-		},
-	});
-	const text = new PIXI.Text({
-		text: label,
-		style,
-	});
+class Choice {
+	constructor(choice) {
+		this.id = choice.id;
+		this.name = choice.name;
 
-	container.updateTransform({
-		x,
-		y,
-		rotation: angle,
-		pivotX: -radius * 0.15,
-		pivotY: fontSize / 2,
-	});
+		this.container = new PIXI.Container();
+		this.graphics = new PIXI.Graphics();
+		this.label = new Label(this.name);
+		this.container.addChild(this.graphics);
+		this.container.addChild(this.label.container);
 
-	container.addChild(text);
+		this.container.zIndex = 2;
+	}
 
-	return container;
+	#renderGraphics({ x, y, radius, startAngle, endAngle, color }) {
+		this.graphics
+			.moveTo(x, y)
+			.arc(x, y, radius, startAngle, endAngle)
+			.fill(color);
+	}
+
+	render({ x, y, radius, startAngle, endAngle, color }) {
+		this.#renderGraphics({ x, y, radius, startAngle, endAngle, color });
+		this.label.render({ x, y, startAngle, endAngle, radius });
+	}
+
+	destroy() {
+		this.label.destroy();
+		this.graphics.destroy();
+		this.container.destroy();
+	}
+}
+
+class Label {
+	constructor(name) {
+		this.name = name;
+		this.fontSize = 24;
+		this.container = new PIXI.Container();
+		const style = new PIXI.TextStyle({
+			fontFamily: "Arial",
+			fontSize: this.fontSize,
+			fontWeight: 700,
+			fill: 0xffffff,
+			dropShadow: {
+				alpha: 1,
+				angle: -60,
+				blur: 1,
+				color: 0x000000,
+				distance: 1,
+			},
+		});
+		this.text = new PIXI.Text({ text: name, style });
+		this.container.addChild(this.text);
+	}
+
+	render({ x, y, startAngle, endAngle, radius }) {
+		const angle = (startAngle + endAngle) / 2;
+		this.container.updateTransform({
+			x,
+			y,
+			rotation: angle,
+			pivotX: -radius * 0.15,
+			pivotY: this.fontSize / 2,
+		});
+	}
+
+	destroy() {
+		this.text.destroy();
+		this.container.destroy();
+	}
 }
