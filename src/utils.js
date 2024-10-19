@@ -14,3 +14,35 @@ export function randomBetween(min, max) {
 export function generateId() {
 	return `id-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
+
+export class EventEmitter {
+	#listeners = new Map();
+
+	on(eventName, cb) {
+		const listeners = this.#listeners.get(eventName) ?? [];
+
+		listeners.push(cb);
+
+		this.#listeners.set(eventName, listeners);
+
+		const off = () => {
+			let listeners = this.#listeners.get(eventName) ?? [];
+
+			const index = listeners.findIndex((e) => e === cb);
+
+			if (index !== -1) {
+				listeners.splice(index, 1);
+			}
+
+			this.#listeners.set(eventName, listeners);
+		};
+
+		return off;
+	}
+
+	trigger(eventName, payload) {
+		const listeners = this.#listeners.get(eventName) ?? [];
+
+		listeners.forEach((listener) => listener(payload));
+	}
+}

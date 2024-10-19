@@ -1,13 +1,23 @@
 import { FORM_ID, OPTIONS_LIST_ID } from "./config";
-import { generateId } from "./utils";
+import { generateId, EventEmitter } from "./utils";
 
-export class Form {
+export const FORM_EVENTS = {
+	ADD_CHOICE: "ADD_CHOICE",
+	REMOVE_CHOICE: "REMOVE_CHOICE",
+};
+
+export class Form extends EventEmitter {
 	#options = [];
 
 	constructor(options = []) {
+		super();
 		this.#options = options;
 		this.#renderOptions();
 		this.#initForm();
+	}
+
+	get choices() {
+		return this.#options;
 	}
 
 	#initForm() {
@@ -25,6 +35,7 @@ export class Form {
 				name: data.get("name"),
 			};
 			this.#options.push(newOption);
+			this.trigger(FORM_EVENTS.ADD_CHOICE, newOption);
 			this.#update();
 			form.reset();
 		});
@@ -56,6 +67,7 @@ export class Form {
 			removeBtn.textContent = "Remove";
 			const clickListener = () => {
 				removeBtn.removeEventListener("click", clickListener);
+				this.trigger(FORM_EVENTS.REMOVE_CHOICE, option);
 				this.#removeOption(i);
 			};
 			removeBtn.addEventListener("click", clickListener);

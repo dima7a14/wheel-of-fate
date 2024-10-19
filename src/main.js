@@ -17,8 +17,8 @@
 //   });
 // });
 
-import { initWheel } from "./wheel";
-import { Form } from "./form";
+import { createWheel } from "./wheel";
+import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 import { generateId } from "./utils";
 
@@ -73,5 +73,16 @@ import { generateId } from "./utils";
 
 	const form = new Form(initOptions);
 
-	await initWheel(el, initOptions);
+	const wheel = await createWheel(el, form.choices);
+
+	const onAddChoice = (choice) => {
+		wheel.addChoice(choice);
+	};
+
+	const onRemoveChoice = (choice) => {
+		wheel.removeChoice(choice);
+	};
+
+	form.on(FORM_EVENTS.ADD_CHOICE, onAddChoice);
+	form.on(FORM_EVENTS.REMOVE_CHOICE, onRemoveChoice);
 })();

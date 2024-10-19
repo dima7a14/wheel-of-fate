@@ -13,7 +13,7 @@ const colors = [
 	"orange",
 ];
 
-export async function initWheel(el, options) {
+export async function createWheel(el, initChoices) {
 	const { width, height } = el.getBoundingClientRect();
 	console.log("Initializing Wheel", {
 		el,
@@ -35,8 +35,8 @@ export async function initWheel(el, options) {
 
 	const wheel = new Wheel({ width, height });
 
-	options.forEach((option) => {
-		wheel.addChoice(option);
+	initChoices.forEach((choice) => {
+		wheel.addChoice(choice);
 	});
 
 	app.stage.addChild(wheel.container);
@@ -63,9 +63,25 @@ export async function initWheel(el, options) {
 		// }
 		wheel.render();
 	});
+
+	const addChoice = (choice) => {
+		wheel.addChoice(choice);
+	};
+
+	const removeChoice = (choice) => {
+		wheel.removeChoice(choice);
+	};
+
+	return {
+		addChoice,
+		removeChoice,
+		spin,
+	};
 }
 
 class Wheel {
+	#shouldRender = true;
+
 	constructor({ width, height }) {
 		this.width = width;
 		this.height = height;
@@ -90,22 +106,28 @@ class Wheel {
 
 		this.choices.push(choiceComponent);
 		this.container.addChild(choiceComponent.container);
+		this.#shouldRender = true;
 	}
 
-	removeChoice(id) {
-		const index = this.choices.find((c) => c.id === id);
+	removeChoice(choice) {
+		const index = this.choices.findIndex((c) => c.id === choice.id);
 
 		if (index === -1) {
 			return;
 		}
 
-		const choice = this.choices.splice(index, 1);
+		const [choiceToRemove] = this.choices.splice(index, 1);
 
-		choice.destroy();
-		this.container.removeChildAt(index);
+		choiceToRemove.destroy();
+		this.#shouldRender = true;
 	}
 
 	render() {
+		if (!this.#shouldRender) {
+			return;
+		}
+
+		console.log("Wheel render");
 		this.choices.forEach((choice, index) => {
 			const color = colors[index % colors.length];
 			const { x, y } = this.center;
@@ -121,6 +143,8 @@ class Wheel {
 				radius: this.radius,
 			});
 		});
+
+		this.#shouldRender = false;
 	}
 }
 
