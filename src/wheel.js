@@ -46,22 +46,22 @@ export async function createWheel(el, initChoices) {
 	const MIN_SPEED = 1;
 
 	function spin() {
-		angle = randomBetween(720, 36000);
+		angle = angle + randomBetween(720, 36000);
 	}
 
 	el.appendChild(app.canvas);
 
-	// setTimeout(() => {
-	// 	spin();
-	// }, 2000);
-
 	app.ticker.add(() => {
-		// if (currentAngle < angle) {
-		// 	const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
-		// 	currentAngle = Math.min(angle, currentAngle + speed);
-		// 	wheel.rotate(speed);
-		// }
+		if (currentAngle < angle) {
+			const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
+			currentAngle = Math.min(angle, currentAngle + speed);
+			wheel.rotate(speed);
+		}
 		wheel.render();
+	});
+
+	app.stage.on("click", () => {
+		spin();
 	});
 
 	const addChoice = (choice) => {
@@ -75,12 +75,12 @@ export async function createWheel(el, initChoices) {
 	return {
 		addChoice,
 		removeChoice,
-		spin,
 	};
 }
 
 class Wheel {
 	#shouldRender = true;
+	#rotation = 0;
 
 	constructor({ width, height }) {
 		this.width = width;
@@ -99,6 +99,12 @@ class Wheel {
 
 	get center() {
 		return { x: this.width / 2, y: this.height / 2 };
+	}
+
+	rotate(delta) {
+		const rotation = this.#rotation + degreesToRadians(delta);
+		this.#rotation = rotation;
+		this.#shouldRender = true;
 	}
 
 	addChoice(choice) {
@@ -127,12 +133,11 @@ class Wheel {
 			return;
 		}
 
-		console.log("Wheel render");
 		this.choices.forEach((choice, index) => {
 			const color = colors[index % colors.length];
 			const { x, y } = this.center;
-			const startAngle = index * this.delta;
-			const endAngle = (index + 1) * this.delta;
+			const startAngle = this.#rotation + index * this.delta;
+			const endAngle = this.#rotation + (index + 1) * this.delta;
 
 			choice.render({
 				x,
@@ -164,6 +169,7 @@ class Choice {
 
 	#renderGraphics({ x, y, radius, startAngle, endAngle, color }) {
 		this.graphics
+			.clear()
 			.moveTo(x, y)
 			.arc(x, y, radius, startAngle, endAngle)
 			.fill(color);
@@ -181,10 +187,13 @@ class Choice {
 	}
 }
 
+const FONT_SIZE_SCALE = 40;
+
 class Label {
 	constructor(name) {
 		this.name = name;
-		this.fontSize = 24;
+		const minDim = Math.min(window.innerWidth, window.innerHeight);
+		this.fontSize = minDim / FONT_SIZE_SCALE;
 		this.container = new PIXI.Container();
 		const style = new PIXI.TextStyle({
 			fontFamily: "Arial",
