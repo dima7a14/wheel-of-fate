@@ -5,6 +5,8 @@ use random::Source;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fmt::Display;
+use std::fs::File;
+use std::io::prelude::*;
 use uuid::Uuid;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -13,7 +15,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let init_choices = vec![
         "The Binding of Isaac",
         "Crypt of the Necro Dancer",
@@ -28,6 +30,7 @@ fn main() {
         "Ravenswatch",
     ];
     let mut random_source = random::default(42);
+    let mut choices: Vec<Choice> = Vec::new();
 
     for &name in &init_choices {
         let color = Color(
@@ -37,9 +40,14 @@ fn main() {
         );
         let choice = Choice::new(name, color);
         println!("Choice - {}", choice);
+
+        choices.push(choice);
     }
 
-    // let choice = Choice::new()
+    save_choices(choices)?;
+
+    Ok(())
+
     // tauri::Builder::default()
     //     .plugin(tauri_plugin_shell::init())
     //     .invoke_handler(tauri::generate_handler![greet])
@@ -47,6 +55,19 @@ fn main() {
     //     .expect("error while running tauri application");
 }
 
+fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
+    let serialized_choices = choices
+        .iter()
+        .map(|choice| -> String { serde_json::to_string(choice).unwrap() })
+        .collect::<Vec<String>>()
+        .join(",");
+
+    let mut file = File::create("choices.json")?;
+    file.write_all(format!("[{}]", serialized_choices).as_bytes())?;
+    Ok(())
+}
+
+#[derive(Serialize, Deserialize)]
 struct Choice {
     id: Uuid,
     name: String,
@@ -76,13 +97,9 @@ impl Display for Choice {
 }
 
 // TODO: add some basic color utilities to generate nice palette
-struct Color(u8, u8, u8);
 
-impl Color {
-    fn to_hex(&self) -> String {
-        format!("#{:X}{:X}{:X}", self.0, self.1, self.2)
-    }
-}
+#[derive(Serialize, Deserialize)]
+struct Color(u8, u8, u8);
 
 impl Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
