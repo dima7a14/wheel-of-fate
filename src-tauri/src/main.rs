@@ -1,12 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use random::Source;
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fmt::Display;
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::{prelude::*, BufReader};
 use uuid::Uuid;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -29,14 +29,14 @@ fn main() -> std::io::Result<()> {
         "Noita",
         "Ravenswatch",
     ];
-    let mut random_source = random::default(42);
     let mut choices: Vec<Choice> = Vec::new();
+    let mut rng = thread_rng();
 
     for &name in &init_choices {
         let color = Color(
-            random_source.read::<u8>(),
-            random_source.read::<u8>(),
-            random_source.read::<u8>(),
+            rng.gen_range(0..=255),
+            rng.gen_range(0..=255),
+            rng.gen_range(0..=255),
         );
         let choice = Choice::new(name, color);
         println!("Choice - {}", choice);
@@ -44,7 +44,12 @@ fn main() -> std::io::Result<()> {
         choices.push(choice);
     }
 
-    save_choices(choices)?;
+    // save_choices(choices)?;
+    let loaded_choices = load_choices()?;
+
+    for loaded_choice in loaded_choices {
+        println!("Loaded choice - {}", loaded_choice);
+    }
 
     Ok(())
 
@@ -55,6 +60,8 @@ fn main() -> std::io::Result<()> {
     //     .expect("error while running tauri application");
 }
 
+const FILE_NAME: &str = "choices.json";
+
 fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
     let serialized_choices = choices
         .iter()
@@ -62,9 +69,32 @@ fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
         .collect::<Vec<String>>()
         .join(",");
 
-    let mut file = File::create("choices.json")?;
+    let mut file = File::create(FILE_NAME)?;
     file.write_all(format!("[{}]", serialized_choices).as_bytes())?;
     Ok(())
+}
+
+fn load_choices() -> std::io::Result<Vec<Choice>> {
+    let file = File::open(FILE_NAME)?;
+    let mut buffer = BufReader::new(file);
+    let mut contents = String::new();
+
+    buffer.read_to_string(&mut contents)?;
+
+    let json: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
+
+    let choices = json
+        .iter()
+        .map(|json_value| -> Result<Choice, serde_json::Error> {
+            let choice = Choice::deserialize(json_value)?;
+
+            Ok(choice)
+        })
+        .filter(|choice: &Result<Choice, _>| choice.is_ok())
+        .map(|choice: Result<Choice, _>| choice.unwrap())
+        .collect::<Vec<Choice>>();
+
+    Ok(choices)
 }
 
 #[derive(Serialize, Deserialize)]
