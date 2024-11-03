@@ -1,13 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod choice;
+mod color;
+
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fmt::Display;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
-use uuid::Uuid;
+use crate::choice::Choice;
+use crate::color::Color;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -28,6 +30,7 @@ fn main() -> std::io::Result<()> {
         "Enter the Gungeon",
         "Noita",
         "Ravenswatch",
+        "Everspace"
     ];
     let mut choices: Vec<Choice> = Vec::new();
     let mut rng = thread_rng();
@@ -44,8 +47,8 @@ fn main() -> std::io::Result<()> {
         choices.push(choice);
     }
 
-    // save_choices(choices)?;
-    let loaded_choices = load_choices()?;
+    Choice::save_choices(choices)?;
+    let loaded_choices = Choice::load_choices()?;
 
     for loaded_choice in loaded_choices {
         println!("Loaded choice - {}", loaded_choice);
@@ -58,81 +61,4 @@ fn main() -> std::io::Result<()> {
     //     .invoke_handler(tauri::generate_handler![greet])
     //     .run(tauri::generate_context!())
     //     .expect("error while running tauri application");
-}
-
-const FILE_NAME: &str = "choices.json";
-
-fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
-    let serialized_choices = choices
-        .iter()
-        .map(|choice| -> String { serde_json::to_string(choice).unwrap() })
-        .collect::<Vec<String>>()
-        .join(",");
-
-    let mut file = File::create(FILE_NAME)?;
-    file.write_all(format!("[{}]", serialized_choices).as_bytes())?;
-    Ok(())
-}
-
-fn load_choices() -> std::io::Result<Vec<Choice>> {
-    let file = File::open(FILE_NAME)?;
-    let mut buffer = BufReader::new(file);
-    let mut contents = String::new();
-
-    buffer.read_to_string(&mut contents)?;
-
-    let json: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
-
-    let choices = json
-        .iter()
-        .map(|json_value| -> Result<Choice, serde_json::Error> {
-            let choice = Choice::deserialize(json_value)?;
-
-            Ok(choice)
-        })
-        .filter(|choice: &Result<Choice, _>| choice.is_ok())
-        .map(|choice: Result<Choice, _>| choice.unwrap())
-        .collect::<Vec<Choice>>();
-
-    Ok(choices)
-}
-
-#[derive(Serialize, Deserialize)]
-struct Choice {
-    id: Uuid,
-    name: String,
-    color: Color,
-}
-
-impl Choice {
-    fn new(name: &str, color: Color) -> Choice {
-        let id = Uuid::new_v4();
-
-        Choice {
-            id,
-            name: name.to_string(),
-            color,
-        }
-    }
-}
-
-impl Display for Choice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Choice(id = {}, name = {}, color = {})",
-            self.id, self.name, self.color
-        )
-    }
-}
-
-// TODO: add some basic color utilities to generate nice palette
-
-#[derive(Serialize, Deserialize)]
-struct Color(u8, u8, u8);
-
-impl Display for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "rgb({}, {}, {})", self.0, self.1, self.2)
-    }
 }
