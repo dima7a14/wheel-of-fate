@@ -26,32 +26,37 @@ impl Choice {
             color,
         }
     }
+}
 
-    pub fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
-        let serialized_choices = serde_json::to_string(&choices)?;
-        let mut file = File::create(FILE_NAME)?;
+pub fn save_choices(choices: Vec<Choice>) -> std::io::Result<()> {
+    let serialized_choices = serde_json::to_string(&choices)?;
+    let mut file = File::create(FILE_NAME)?;
 
-        file.write_all(serialized_choices.as_bytes())?;
+    file.write_all(serialized_choices.as_bytes())?;
 
-        Ok(())
-    }
+    Ok(())
+}
 
-    pub fn load_choices() -> std::io::Result<Vec<Choice>> {
-        let file = File::open(FILE_NAME)?;
-        let mut buffer = BufReader::new(file);
-        let mut contents = String::new();
+pub fn load_choices() -> std::io::Result<Vec<Choice>> {
+    let file = File::open(FILE_NAME)?;
+    let mut buffer = BufReader::new(file);
+    let mut contents = String::new();
 
-        buffer.read_to_string(&mut contents)?;
+    buffer.read_to_string(&mut contents)?;
 
-        let json: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
+    let json: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
 
-        let choices = json.iter().map(|json_value| -> Result<Choice, serde_json::Error> {
+    let choices = json
+        .iter()
+        .map(|json_value| -> Result<Choice, serde_json::Error> {
             let choice = Choice::deserialize(json_value)?;
             Ok(choice)
-        }).filter(|choice: &Result<Choice, _>| choice.is_ok()).map(|choice| choice.unwrap()).collect::<Vec<Choice>>();
+        })
+        .filter(|choice: &Result<Choice, _>| choice.is_ok())
+        .map(|choice| choice.unwrap())
+        .collect::<Vec<Choice>>();
 
-        Ok(choices)
-    }
+    Ok(choices)
 }
 
 impl Display for Choice {

@@ -21,6 +21,7 @@ import { createWheel } from "./wheel";
 import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 import { generateId } from "./utils";
+import { backend } from './backend';
 
 (async () => {
 	const el = document.getElementById(WHEEL_ELEMENT_ID);
@@ -29,46 +30,46 @@ import { generateId } from "./utils";
 	}
 
 	const initOptions = [
-		{
-			id: generateId(),
-			name: "The Binding of Isaac",
-		},
-		{
-			id: generateId(),
-			name: "Crypt of the Necro Dancer",
-		},
-		{
-			id: generateId(),
-			name: "Curse of the Dead Gods",
-		},
-		{
-			id: generateId(),
-			name: "Dead Cells",
-		},
-		{
-			id: generateId(),
-			name: "Dead Estate",
-		},
-		{
-			id: generateId(),
-			name: "Nuclear Throne",
-		},
-		{
-			id: generateId(),
-			name: "Invisible Inc.",
-		},
-		{
-			id: generateId(),
-			name: "Risk of Rain 2",
-		},
-		{
-			id: generateId(),
-			name: "Enter the Gungeon",
-		},
-		{
-			id: generateId(),
-			name: "Noita",
-		},
+		// {
+		// 	id: generateId(),
+		// 	name: "The Binding of Isaac",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Crypt of the Necro Dancer",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Curse of the Dead Gods",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Dead Cells",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Dead Estate",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Nuclear Throne",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Invisible Inc.",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Risk of Rain 2",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Enter the Gungeon",
+		// },
+		// {
+		// 	id: generateId(),
+		// 	name: "Noita",
+		// },
 	];
 
 	const form = new Form(initOptions);
@@ -85,4 +86,6 @@ import { generateId } from "./utils";
 
 	form.on(FORM_EVENTS.ADD_CHOICE, onAddChoice);
 	form.on(FORM_EVENTS.REMOVE_CHOICE, onRemoveChoice);
+
+	await backend.loadChoices();
 })();
