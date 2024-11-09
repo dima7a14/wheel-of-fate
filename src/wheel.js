@@ -1,17 +1,6 @@
 import * as PIXI from "pixi.js";
 
-import { degreesToRadians, randomBetween } from "./utils";
-
-const colors = [
-	"red",
-	"blue",
-	"green",
-	"pink",
-	"brown",
-	"yellow",
-	"violet",
-	"orange",
-];
+import { degreesToRadians, invertColor, randomBetween } from "./utils";
 
 export async function createWheel(el, initChoices) {
 	const { width, height } = el.getBoundingClientRect();
@@ -134,7 +123,6 @@ class Wheel {
 		}
 
 		this.choices.forEach((choice, index) => {
-			const color = colors[index % colors.length];
 			const { x, y } = this.center;
 			const startAngle = this.#rotation + index * this.delta;
 			const endAngle = this.#rotation + (index + 1) * this.delta;
@@ -144,7 +132,7 @@ class Wheel {
 				y,
 				startAngle,
 				endAngle,
-				color,
+				color: choice.color,
 				radius: this.radius,
 			});
 		});
@@ -157,10 +145,11 @@ class Choice {
 	constructor(choice) {
 		this.id = choice.id;
 		this.name = choice.name;
+		this.color = choice.color;
 
 		this.container = new PIXI.Container();
 		this.graphics = new PIXI.Graphics();
-		this.label = new Label(this.name);
+		this.label = new Label(this.name, this.color);
 		this.container.addChild(this.graphics);
 		this.container.addChild(this.label.container);
 
@@ -190,7 +179,7 @@ class Choice {
 const FONT_SIZE_SCALE = 40;
 
 class Label {
-	constructor(name) {
+	constructor(name, bgColor) {
 		this.name = name;
 		const minDim = Math.min(window.innerWidth, window.innerHeight);
 		this.fontSize = minDim / FONT_SIZE_SCALE;
@@ -199,14 +188,14 @@ class Label {
 			fontFamily: "Arial",
 			fontSize: this.fontSize,
 			fontWeight: 700,
-			fill: 0xffffff,
-			dropShadow: {
-				alpha: 1,
-				angle: -60,
-				blur: 1,
-				color: 0x000000,
-				distance: 1,
-			},
+			fill: invertColor(bgColor),
+			// dropShadow: {
+			// 	alpha: 1,
+			// 	angle: 0,
+			// 	blur: 3,
+			// 	color: 0x000000,
+			// 	distance: 0,
+			// },
 		});
 		this.text = new PIXI.Text({ text: name, style });
 		this.container.addChild(this.text);

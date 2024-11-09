@@ -46,3 +46,34 @@ export class EventEmitter {
 		listeners.forEach((listener) => listener(payload));
 	}
 }
+
+function fromHexToRGB(hexColor) {
+	if (typeof hexColor !== "string") {
+		throw new Error("Invalid color", hexColor);
+	}
+
+	if (hexColor.indexOf("#") !== 0) {
+		throw new Error("Invalid format for hex color", hexColor);
+	}
+
+	let color = hexColor.slice(1);
+
+	if (color.length === 3) {
+		color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
+	}
+
+	if (color.length !== 6) {
+		throw new Error("Invalid hex color", hexColor);
+	}
+
+	const r = parseInt(color.slice(0, 2), 16);
+	const g = parseInt(color.slice(2, 4), 16);
+	const b = parseInt(color.slice(4, 6), 16);
+
+	return { r, g, b };
+}
+
+export function invertColor(color) {
+	const { r, g, b } = fromHexToRGB(color);
+	return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? "#000000" : "#ffffff";
+}
