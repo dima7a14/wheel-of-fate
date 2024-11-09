@@ -4,13 +4,14 @@
 mod choice;
 mod color;
 
+use crate::choice::{load_choices, Choice};
+use crate::color::Color;
+use choice::save_choices;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fmt::Display;
-use tauri::{AppHandle, Emitter, Error};
-use crate::choice::{Choice, load_choices};
-use crate::color::Color;
+use tauri;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -19,7 +20,7 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn get_choices() -> Result<Vec<Choice>, Error> {
+fn get_choices() -> Result<Vec<Choice>, tauri::Error> {
     let choices = load_choices()?;
 
     Ok(choices)
@@ -38,31 +39,30 @@ fn main() -> std::io::Result<()> {
     //     "Enter the Gungeon",
     //     "Noita",
     //     "Ravenswatch",
-    //     "Everspace"
+    //     "Everspace",
     // ];
     // let mut choices: Vec<Choice> = Vec::new();
     // let mut rng = thread_rng();
-    //
+
     // for &name in &init_choices {
-    //     let color = Color(
-    //         rng.gen_range(0..=255),
-    //         rng.gen_range(0..=255),
-    //         rng.gen_range(0..=255),
-    //     );
+    //     let color = Color {
+    //         r: rng.gen_range(0..=255),
+    //         g: rng.gen_range(0..=255),
+    //         b: rng.gen_range(0..=255),
+    //     };
     //     let choice = Choice::new(name, color);
     //     println!("Choice - {}", choice);
-    //
+
     //     choices.push(choice);
     // }
-    //
-    // Choice::save_choices(choices)?;
-    // let loaded_choices = Choice::load_choices()?;
-    //
+
+    // // Choice::save_choices(choices)?;
+    // save_choices(choices)?;
+    // let loaded_choices = load_choices()?;
+
     // for loaded_choice in loaded_choices {
     //     println!("Loaded choice - {}", loaded_choice);
     // }
-
-
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

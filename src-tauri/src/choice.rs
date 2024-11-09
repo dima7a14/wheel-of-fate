@@ -17,7 +17,7 @@ pub struct Choice {
 }
 
 impl Choice {
-    pub fn new (name: &str, color: Color) -> Self {
+    pub fn new(name: &str, color: Color) -> Self {
         let id = Uuid::new_v4();
 
         Choice {
@@ -61,6 +61,10 @@ pub fn load_choices() -> std::io::Result<Vec<Choice>> {
 
 impl Display for Choice {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Choice(id={}, name={}, color={})", self.id, self.name, self.color)
+        write!(
+            f,
+            "Choice(id={}, name={}, color={})",
+            self.id, self.name, self.color
+        )
     }
 }
