@@ -1,26 +1,6 @@
-// const { invoke } = window.__TAURI__.tauri;
-
-// let greetInputEl;
-// let greetMsgEl;
-
-// async function greet() {
-//   // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-//   greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
-// }
-
-// window.addEventListener("DOMContentLoaded", () => {
-//   greetInputEl = document.querySelector("#greet-input");
-//   greetMsgEl = document.querySelector("#greet-msg");
-//   document.querySelector("#greet-form").addEventListener("submit", (e) => {
-//     e.preventDefault();
-//     greet();
-//   });
-// });
-
 import { createWheel } from "./wheel";
 import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
-import { generateId } from "./utils";
 import { backend } from "./backend";
 
 (async () => {
@@ -35,7 +15,9 @@ import { backend } from "./backend";
 
 	const wheel = await createWheel(el, form.choices);
 
-	const onAddChoice = (choice) => {
+	const onAddChoice = async (name) => {
+		const choice = await backend.addChoice(name);
+		form.addOption(choice);
 		wheel.addChoice(choice);
 	};
 

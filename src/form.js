@@ -1,5 +1,5 @@
 import { FORM_ID, OPTIONS_LIST_ID } from "./config";
-import { generateId, EventEmitter } from "./utils";
+import { EventEmitter } from "./utils";
 
 export const FORM_EVENTS = {
 	ADD_CHOICE: "ADD_CHOICE",
@@ -20,6 +20,11 @@ export class Form extends EventEmitter {
 		return this.#options;
 	}
 
+	addOption(option) {
+		this.#options.push(option);
+		this.#update();
+	}
+
 	#initForm() {
 		const form = document.getElementById(FORM_ID);
 
@@ -30,13 +35,7 @@ export class Form extends EventEmitter {
 		form.addEventListener("submit", (event) => {
 			event.preventDefault();
 			const data = new FormData(form);
-			const newOption = {
-				id: generateId(),
-				name: data.get("name"),
-			};
-			this.#options.push(newOption);
-			this.trigger(FORM_EVENTS.ADD_CHOICE, newOption);
-			this.#update();
+			this.trigger(FORM_EVENTS.ADD_CHOICE, data.get("name"));
 			form.reset();
 		});
 	}

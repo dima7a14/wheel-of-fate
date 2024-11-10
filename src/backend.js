@@ -5,6 +5,7 @@ import { EventEmitter } from "./utils";
 const EVENTS = {};
 const INVOKE_COMMANDS = {
 	getChoices: "get_choices",
+	addChoice: "add_choice",
 };
 
 class Events extends EventEmitter {
@@ -24,5 +25,11 @@ export const backend = {
 	loadChoices: async () => {
 		const choices = await invoke(INVOKE_COMMANDS.getChoices);
 		return choices;
+	},
+	addChoice: async (name) => {
+		const choice = await invoke(INVOKE_COMMANDS.addChoice, {
+			choiceName: name,
+		});
+		return choice;
 	},
 };
