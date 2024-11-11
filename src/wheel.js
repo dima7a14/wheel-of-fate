@@ -61,6 +61,10 @@ export async function createWheel(el, initChoices) {
 		wheel.addChoice(choice);
 	};
 
+	const addChoices = (choices) => {
+		choices.forEach(addChoice);
+	};
+
 	const removeChoice = (choice) => {
 		wheel.removeChoice(choice);
 	};
@@ -73,6 +77,7 @@ export async function createWheel(el, initChoices) {
 
 	return {
 		addChoice,
+		addChoices,
 		removeChoice,
 	};
 }

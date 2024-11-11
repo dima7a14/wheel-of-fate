@@ -4,7 +4,7 @@
 mod choice;
 mod color;
 
-use crate::choice::{load_choices, save_choices, Choice};
+use crate::choice::Choice;
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
 use uuid::Uuid;
@@ -22,13 +22,26 @@ fn get_choices(state: State<'_, Mutex<AppState>>) -> Arc<[Choice]> {
 }
 
 #[tauri::command]
+fn load_choices(state: State<'_, Mutex<AppState>>, file_path: String) -> Result<String, String> {
+    let mut state = state.lock().unwrap();
+    if let Ok(choices) = Choice::load_choices(&file_path) {
+        state.choices = choices.clone();
+
+        Ok("Choices loaded.".to_string())
+    } else {
+        println!("No choices found.");
+        Err("No choices found.".to_string())
+    }
+}
+
+#[tauri::command]
 fn add_choice(state: State<'_, Mutex<AppState>>, choice_name: String) -> Choice {
     let mut state = state.lock().unwrap();
     let choice = Choice::new(&choice_name, None);
     let mut choices = state.choices.to_vec();
 
     choices.push(choice.clone());
-    let _ = save_choices(&choices);
+    let _ = Choice::save_choices(&choices);
     state.choices = Arc::from(choices);
 
     choice
@@ -40,7 +53,7 @@ fn remove_choice(state: State<'_, Mutex<AppState>>, choice_id: String) -> Arc<[C
     let mut choices = state.choices.to_vec();
     choices.retain(|c| c.id != Uuid::parse_str(&choice_id).unwrap());
 
-    let _ = save_choices(&choices);
+    let _ = Choice::save_choices(&choices);
     state.choices = Arc::from(choices);
 
     state.choices.clone()
@@ -50,10 +63,7 @@ fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
-            let choices = load_choices().unwrap_or_else(|error| {
-                println!("Failed loading choices {:?}", error);
-                Arc::new([])
-            });
+            let choices = Arc::new([]);
 
             app.manage(Mutex::new(AppState { choices }));
 
@@ -61,7 +71,9 @@ fn main() -> std::io::Result<()> {
         })
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            load_choices,
             get_choices,
             add_choice,
             remove_choice

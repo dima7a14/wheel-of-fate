@@ -25,6 +25,11 @@ export class Form extends EventEmitter {
 		this.#update();
 	}
 
+	addOptions(options) {
+		this.#options.push(...options);
+		this.#update();
+	}
+
 	#initForm() {
 		const form = document.getElementById(FORM_ID);
 

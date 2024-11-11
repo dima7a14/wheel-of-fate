@@ -2,6 +2,7 @@ import { createWheel } from "./wheel";
 import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 import { backend } from "./backend";
+import { FILE_DIALOG_EVENTS, FileDialog } from "./fileDialog.js";
 
 (async () => {
 	const el = document.getElementById(WHEEL_ELEMENT_ID);
@@ -9,7 +10,16 @@ import { backend } from "./backend";
 		throw new Error("Not found element for Wheel!");
 	}
 
-	const initOptions = await backend.loadChoices();
+	const fileDialog = new FileDialog();
+
+	fileDialog.on(FILE_DIALOG_EVENTS.FILE_OPENED, async () => {
+		const choices = await backend.getChoices();
+		wheel.addChoices(choices);
+		form.addOptions(choices);
+		fileDialog.hideDialog();
+	});
+
+	const initOptions = [];
 
 	const form = new Form(initOptions);
 

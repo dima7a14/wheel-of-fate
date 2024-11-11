@@ -149,3 +149,61 @@ button {
 .remove-choice:hover {
     background-color: #f54646;
 }
+
+.file-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /*display: none;*/
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f6f6f6;
+    border-radius: 4px;
+    box-shadow: 0 0.125rem 0.125rem rgba(0, 0, 0, 0.25);
+}
+
+.modal-content-btn {
+    display: block;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #292929;
+    width: 100%;
+    appearance: none;
+    background-color: transparent;
+    border-radius: 4px;
+    line-height: 1.5rem;
+    transition: all 0.3s ease-out;
+}
+
+.modal-content-btn-new {
+    background-color: #ffe9a6;
+}
+
+.modal-content-btn-new:hover {
+    background-color: #f3da73;
+}
+
+.modal-content-btn-open {
+    background-color: #d0abf4;
+}
+
+.modal-content-btn-open:hover {
+    background-color: #ae7de4;
+}

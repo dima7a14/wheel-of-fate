@@ -13,6 +13,9 @@
     - [x] Remove an option from the state and from the JSON file.
 - [x] Re-render wheel on window resize.
 - [ ] Pick a file to store wheel options.
+    - [x] Load wheel options from the file.
+    - [ ] Create new file for wheel options.
+    - [ ] Update extension `.json -> .wheel`.
 - [ ] Improve UI
     - [ ] Show modal with a winner
     - [ ] Add effects on spin

@@ -1,0 +1,11 @@
+{
+  "identifier": "allow-files-dialog",
+  "description": "This allows opening files dialog",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "dialog:allow-open",
+    "dialog:default"
+  ]
+}

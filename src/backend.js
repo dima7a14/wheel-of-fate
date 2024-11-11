@@ -1,9 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import { EventEmitter } from "./utils";
 
 const EVENTS = {};
 const INVOKE_COMMANDS = {
+	loadChoices: "load_choices",
 	getChoices: "get_choices",
 	addChoice: "add_choice",
 	removeChoice: "remove_choice",
@@ -23,7 +25,7 @@ class Events extends EventEmitter {
 
 export const backend = {
 	events: new Events(),
-	loadChoices: async () => {
+	getChoices: async () => {
 		const choices = await invoke(INVOKE_COMMANDS.getChoices);
 		return choices;
 	},
@@ -34,7 +36,18 @@ export const backend = {
 		return choice;
 	},
 	removeChoice: async (id) => {
-		const choices = await invoke(INVOKE_COMMANDS.removeChoice, { choiceId: id });
+		const choices = await invoke(INVOKE_COMMANDS.removeChoice, {
+			choiceId: id,
+		});
 		return choices;
+	},
+	openDialog: async () => {
+		const filePath = await open({
+			canCreateDirectories: true,
+			multiple: false,
+			directory: false,
+			filters: [{ name: "Wheel choices", extensions: ["json"] }],
+		});
+		return await invoke(INVOKE_COMMANDS.loadChoices, { filePath });
 	},
 };
