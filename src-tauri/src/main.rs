@@ -38,7 +38,7 @@ fn add_choice(state: State<'_, Mutex<AppState>>, choice_name: String) -> Choice 
 fn remove_choice(state: State<'_, Mutex<AppState>>, choice_id: String) -> Arc<[Choice]> {
     let mut state = state.lock().unwrap();
     let mut choices = state.choices.to_vec();
-    choices.retain(|c| { c.id != Uuid::parse_str(&choice_id).unwrap() });
+    choices.retain(|c| c.id != Uuid::parse_str(&choice_id).unwrap());
 
     let _ = save_choices(&choices);
     state.choices = Arc::from(choices);
@@ -48,9 +48,11 @@ fn remove_choice(state: State<'_, Mutex<AppState>>, choice_id: String) -> Arc<[C
 
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             let choices = load_choices().unwrap_or_else(|error| {
-                panic!("Failed loading choices {:?}", error);
+                println!("Failed loading choices {:?}", error);
+                Arc::new([])
             });
 
             app.manage(Mutex::new(AppState { choices }));
@@ -58,7 +60,12 @@ fn main() -> std::io::Result<()> {
             Ok(())
         })
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_choices, add_choice, remove_choice])
+        .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![
+            get_choices,
+            add_choice,
+            remove_choice
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
