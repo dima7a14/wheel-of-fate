@@ -1,9 +1,13 @@
 import * as PIXI from "pixi.js";
 
 import { degreesToRadians, invertColor, randomBetween } from "./utils";
+import { Viewport, VIEWPORT_EVENTS } from "./viewport";
 
 export async function createWheel(el, initChoices) {
-	const { width, height } = el.getBoundingClientRect();
+	const viewport = new Viewport(el);
+	const width = viewport.width;
+	const height = viewport.height;
+
 	console.log("Initializing Wheel", {
 		el,
 		width,
@@ -61,6 +65,12 @@ export async function createWheel(el, initChoices) {
 		wheel.removeChoice(choice);
 	};
 
+	viewport.on(VIEWPORT_EVENTS.RESIZE, ({ width, height }) => {
+		wheel.width = width;
+		wheel.height = height;
+		wheel.forceRender();
+	});
+
 	return {
 		addChoice,
 		removeChoice,
@@ -114,6 +124,10 @@ class Wheel {
 		const [choiceToRemove] = this.choices.splice(index, 1);
 
 		choiceToRemove.destroy();
+		this.#shouldRender = true;
+	}
+
+	forceRender() {
 		this.#shouldRender = true;
 	}
 
