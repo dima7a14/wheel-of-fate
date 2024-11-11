@@ -21,7 +21,8 @@ import { backend } from "./backend";
 		wheel.addChoice(choice);
 	};
 
-	const onRemoveChoice = (choice) => {
+	const onRemoveChoice = async (choice) => {
+		await backend.removeChoice(choice.id);
 		wheel.removeChoice(choice);
 	};
 

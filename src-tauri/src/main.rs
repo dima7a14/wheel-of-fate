@@ -7,6 +7,7 @@ mod color;
 use crate::choice::{load_choices, save_choices, Choice};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
+use uuid::Uuid;
 
 #[derive(Default)]
 struct AppState {
@@ -33,6 +34,18 @@ fn add_choice(state: State<'_, Mutex<AppState>>, choice_name: String) -> Choice 
     choice
 }
 
+#[tauri::command]
+fn remove_choice(state: State<'_, Mutex<AppState>>, choice_id: String) -> Arc<[Choice]> {
+    let mut state = state.lock().unwrap();
+    let mut choices = state.choices.to_vec();
+    choices.retain(|c| { c.id != Uuid::parse_str(&choice_id).unwrap() });
+
+    let _ = save_choices(&choices);
+    state.choices = Arc::from(choices);
+
+    state.choices.clone()
+}
+
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .setup(|app| {
@@ -45,7 +58,7 @@ fn main() -> std::io::Result<()> {
             Ok(())
         })
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_choices, add_choice])
+        .invoke_handler(tauri::generate_handler![get_choices, add_choice, remove_choice])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

@@ -6,6 +6,7 @@ const EVENTS = {};
 const INVOKE_COMMANDS = {
 	getChoices: "get_choices",
 	addChoice: "add_choice",
+	removeChoice: "remove_choice",
 };
 
 class Events extends EventEmitter {
@@ -31,5 +32,9 @@ export const backend = {
 			choiceName: name,
 		});
 		return choice;
+	},
+	removeChoice: async (id) => {
+		const choices = await invoke(INVOKE_COMMANDS.removeChoice, { choiceId: id });
+		return choices;
 	},
 };

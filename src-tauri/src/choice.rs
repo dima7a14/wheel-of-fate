@@ -13,25 +13,22 @@ const FILE_NAME: &'static str = "../choices.json";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Choice {
-    id: Uuid,
-    name: String,
-    color: Color,
+    pub id: Uuid,
+    pub name: String,
+    pub color: Color,
 }
 
 impl Choice {
     pub fn new(name: &str, color: Option<Color>) -> Self {
         let id = Uuid::new_v4();
-        let color = match color {
-            Some(c) => c,
-            None => {
-                let mut rng = thread_rng();
-                Color {
-                    r: rng.gen_range(0..=255),
-                    g: rng.gen_range(0..=255),
-                    b: rng.gen_range(0..=255),
-                }
+        let color = color.unwrap_or_else(|| {
+            let mut rng = thread_rng();
+            Color {
+                r: rng.gen_range(0..=255),
+                g: rng.gen_range(0..=255),
+                b: rng.gen_range(0..=255),
             }
-        };
+        });
 
         Choice {
             id,
