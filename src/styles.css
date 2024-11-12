@@ -216,6 +216,7 @@ button {
 }
 
 .title h1 {
+    padding: 1rem 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
