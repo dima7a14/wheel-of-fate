@@ -15,7 +15,7 @@
 - [ ] Pick a file to store wheel options.
     - [x] Load wheel options from the file.
     - [x] Create new file for wheel options.
-    - [ ] Close opened file.
+    - [x] Close opened file.
     - [ ] Update extension `.json -> .wheel`.
 - [ ] Improve UI
     - [ ] Show modal with a winner

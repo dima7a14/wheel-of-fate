@@ -163,7 +163,6 @@ button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /*display: none;*/
 }
 
 .modal-content {
@@ -206,4 +205,36 @@ button {
 
 .modal-content-btn-open:hover {
     background-color: #ae7de4;
+}
+
+.title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.title h1 {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.close-btn {
+    display: block;
+    cursor: pointer;
+    background-color: #c12a2a;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    color: #eaeaea;
+    justify-self: flex-end;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease-out;
+    appearance: none;
+}
+
+.close-btn:hover {
+    background-color: #f54646;
 }

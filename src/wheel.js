@@ -69,6 +69,10 @@ export async function createWheel(el, initChoices) {
 		wheel.removeChoice(choice);
 	};
 
+	const removeChoices = () => {
+		wheel.removeChoices();
+	};
+
 	viewport.on(VIEWPORT_EVENTS.RESIZE, ({ width, height }) => {
 		wheel.width = width;
 		wheel.height = height;
@@ -79,6 +83,7 @@ export async function createWheel(el, initChoices) {
 		addChoice,
 		addChoices,
 		removeChoice,
+		removeChoices,
 	};
 }
 
@@ -129,6 +134,17 @@ class Wheel {
 		const [choiceToRemove] = this.choices.splice(index, 1);
 
 		choiceToRemove.destroy();
+		this.#shouldRender = true;
+	}
+
+	removeChoices() {
+		for (let i = 0; i < this.choices.length; i++) {
+			const choice = this.choices[i];
+
+			choice.destroy();
+		}
+
+		this.choices = [];
 		this.#shouldRender = true;
 	}
 

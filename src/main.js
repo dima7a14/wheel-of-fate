@@ -3,7 +3,7 @@ import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 import { backend } from "./backend";
 import { FILE_DIALOG_EVENTS, FileDialog } from "./fileDialog";
-import { updateLegend } from "./legend";
+import { Legend, LEGEND_EVENTS } from "./legend";
 
 (async () => {
 	const el = document.getElementById(WHEEL_ELEMENT_ID);
@@ -11,12 +11,13 @@ import { updateLegend } from "./legend";
 		throw new Error("Not found element for Wheel!");
 	}
 
+	const legend = new Legend();
 	const fileDialog = new FileDialog();
 
 	fileDialog.on(FILE_DIALOG_EVENTS.FILE_OPENED, async () => {
 		const choices = await backend.getChoices();
 		const filename = await backend.getFileName();
-		updateLegend({ name: filename });
+		legend.update({ name: filename });
 		wheel.addChoices(choices);
 		form.addOptions(choices);
 		fileDialog.hideDialog();
@@ -25,10 +26,17 @@ import { updateLegend } from "./legend";
 	fileDialog.on(FILE_DIALOG_EVENTS.FILE_CREATED, async () => {
 		const choices = await backend.getChoices();
 		const filename = await backend.getFileName();
-		updateLegend({ name: filename });
+		legend.update({ name: filename });
 		wheel.addChoices(choices);
 		form.addOptions(choices);
 		fileDialog.hideDialog();
+	});
+
+	legend.on(LEGEND_EVENTS.FILE_CLOSED, async () => {
+		await backend.closeFile();
+		wheel.removeChoices();
+		form.removeOptions();
+		fileDialog.showDialog();
 	});
 
 	const initOptions = [];

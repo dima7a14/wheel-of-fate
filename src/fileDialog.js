@@ -44,7 +44,7 @@ export class FileDialog extends EventEmitter {
 		});
 	}
 
-	openDialog() {
+	showDialog() {
 		this.#dialog.style.display = "flex";
 	}
 

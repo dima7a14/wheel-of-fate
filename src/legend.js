@@ -1,20 +1,51 @@
+import { EventEmitter } from "./utils";
+
 const LEGEND_ID = "legend";
+const CLOSE_BTN_ID = "file_close";
 
-export function updateLegend(options) {
-	const legend = document.getElementById(LEGEND_ID);
+export const LEGEND_EVENTS = {
+	FILE_CLOSED: "FILE_CLOSED",
+};
 
-	if (!legend) {
-		throw new Error("Missing Legend element!");
+export class Legend extends EventEmitter {
+	#legendEl = null;
+
+	constructor() {
+		super();
+
+		this.#legendEl = this.#getLegendEl();
+		const btn = document.getElementById(CLOSE_BTN_ID);
+
+		if (!btn) {
+			throw new Error("Missing Close button!");
+		}
+
+		btn.addEventListener("click", () => {
+			this.trigger(LEGEND_EVENTS.FILE_CLOSED);
+		});
 	}
 
-	const title = legend.querySelector("h1");
+	update(options) {
+		const titleEl = this.#legendEl.querySelector("h1");
 
-	if (!title) {
-		throw new Error("Missing title element!");
+		if (!titleEl) {
+			throw new Error("Missing title element!");
+		}
+
+		const titleContent = options.name ?? "Wheel";
+
+		titleEl.textContent = titleContent;
+		titleEl.title = titleContent;
+		document.title = titleContent;
 	}
 
-	const titleContent = options.name ?? "Wheel";
+	#getLegendEl() {
+		const legend = document.getElementById(LEGEND_ID);
 
-	title.textContent = titleContent;
-	document.title = titleContent;
+		if (!legend) {
+			throw new Error("Missing Legend element!");
+		}
+
+		return legend;
+	}
 }

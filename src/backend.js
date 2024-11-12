@@ -11,6 +11,7 @@ const INVOKE_COMMANDS = {
 	getCurrentPath: "get_current_path",
 	addChoice: "add_choice",
 	removeChoice: "remove_choice",
+	closeFile: "close_file",
 };
 
 class Events extends EventEmitter {
@@ -72,5 +73,8 @@ export const backend = {
 		}
 
 		return await invoke(INVOKE_COMMANDS.saveChoices, { filePath });
+	},
+	closeFile: async () => {
+		await invoke(INVOKE_COMMANDS.closeFile);
 	},
 };
