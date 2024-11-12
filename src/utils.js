@@ -79,3 +79,7 @@ export function parseFileName(fullPath) {
 
 	return filenameWithExt.slice(0, index);
 }
+
+export function inRange(value, range) {
+	return value >= range.start && value < range.end;
+}

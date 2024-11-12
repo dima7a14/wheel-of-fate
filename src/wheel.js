@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 
-import { degreesToRadians, invertColor, randomBetween } from "./utils";
+import { degreesToRadians, invertColor, randomBetween, inRange } from "./utils";
 import { Viewport, VIEWPORT_EVENTS } from "./viewport";
 import arrow from "./assets/arrow.png";
 
@@ -38,6 +38,7 @@ export async function createWheel(el, initChoices) {
 	let angle = 0;
 	let currentAngle = 0;
 	const MIN_SPEED = 1;
+	let isSpinning = false;
 
 	function spin() {
 		angle = angle + randomBetween(720, 36000);
@@ -47,15 +48,23 @@ export async function createWheel(el, initChoices) {
 
 	app.ticker.add(() => {
 		if (currentAngle < angle) {
+			isSpinning = true;
 			const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
 			currentAngle = Math.min(angle, currentAngle + speed);
 			wheel.rotate(speed);
+		} else if (isSpinning) {
+			const winner = wheel.getWinner();
+
+			isSpinning = false;
 		}
+
 		wheel.render();
 	});
 
 	app.stage.on("click", () => {
-		spin();
+		if (!isSpinning) {
+			spin();
+		}
 	});
 
 	const addChoice = (choice) => {
@@ -88,7 +97,7 @@ export async function createWheel(el, initChoices) {
 
 class Wheel {
 	#shouldRender = true;
-	#rotation = 0;
+	#rotation = Math.PI;
 
 	constructor({ width, height }) {
 		this.width = width;
@@ -191,6 +200,26 @@ class Wheel {
 		});
 
 		this.#shouldRender = false;
+	}
+
+	getWinner() {
+		const fullCircles = Math.ceil(this.#rotation / (2 * Math.PI));
+		const angle = 2 * Math.PI * fullCircles;
+
+		for (let index = 0; index < this.choices.length; index++) {
+			const choice = this.choices[index];
+			const startAngle = this.#rotation + index * this.delta;
+			const endAngle = this.#rotation + (index + 1) * this.delta;
+			const range = {
+				start: startAngle,
+				end: endAngle,
+			};
+
+			if (inRange(angle, range)) {
+				console.log("Winner!", choice.name);
+				break;
+			}
+		}
 	}
 }
 
