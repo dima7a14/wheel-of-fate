@@ -1,12 +1,14 @@
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
-import { EventEmitter } from "./utils";
+import { open, save } from "@tauri-apps/plugin-dialog";
+import { EventEmitter, parseFileName } from "./utils";
 
 const EVENTS = {};
 const INVOKE_COMMANDS = {
 	loadChoices: "load_choices",
+	saveChoices: "save_choices",
 	getChoices: "get_choices",
+	getCurrentPath: "get_current_path",
 	addChoice: "add_choice",
 	removeChoice: "remove_choice",
 };
@@ -29,6 +31,10 @@ export const backend = {
 		const choices = await invoke(INVOKE_COMMANDS.getChoices);
 		return choices;
 	},
+	getFileName: async () => {
+		const currentPath = await invoke(INVOKE_COMMANDS.getCurrentPath);
+		return parseFileName(currentPath);
+	},
 	addChoice: async (name) => {
 		const choice = await invoke(INVOKE_COMMANDS.addChoice, {
 			choiceName: name,
@@ -41,13 +47,30 @@ export const backend = {
 		});
 		return choices;
 	},
-	openDialog: async () => {
+	openFile: async () => {
 		const filePath = await open({
 			canCreateDirectories: true,
 			multiple: false,
 			directory: false,
 			filters: [{ name: "Wheel choices", extensions: ["json"] }],
 		});
+
+		if (!filePath) {
+			return Promise.reject("No selected file.");
+		}
+
 		return await invoke(INVOKE_COMMANDS.loadChoices, { filePath });
+	},
+	newFile: async () => {
+		const filePath = await save({
+			canCreateDirectories: true,
+			filters: [{ name: "Wheel choices", extensions: ["json"] }],
+		});
+
+		if (!filePath) {
+			return Promise.reject("No created file.");
+		}
+
+		return await invoke(INVOKE_COMMANDS.saveChoices, { filePath });
 	},
 };

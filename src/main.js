@@ -2,7 +2,8 @@ import { createWheel } from "./wheel";
 import { Form, FORM_EVENTS } from "./form";
 import { WHEEL_ELEMENT_ID } from "./config";
 import { backend } from "./backend";
-import { FILE_DIALOG_EVENTS, FileDialog } from "./fileDialog.js";
+import { FILE_DIALOG_EVENTS, FileDialog } from "./fileDialog";
+import { updateLegend } from "./legend";
 
 (async () => {
 	const el = document.getElementById(WHEEL_ELEMENT_ID);
@@ -14,6 +15,17 @@ import { FILE_DIALOG_EVENTS, FileDialog } from "./fileDialog.js";
 
 	fileDialog.on(FILE_DIALOG_EVENTS.FILE_OPENED, async () => {
 		const choices = await backend.getChoices();
+		const filename = await backend.getFileName();
+		updateLegend({ name: filename });
+		wheel.addChoices(choices);
+		form.addOptions(choices);
+		fileDialog.hideDialog();
+	});
+
+	fileDialog.on(FILE_DIALOG_EVENTS.FILE_CREATED, async () => {
+		const choices = await backend.getChoices();
+		const filename = await backend.getFileName();
+		updateLegend({ name: filename });
 		wheel.addChoices(choices);
 		form.addOptions(choices);
 		fileDialog.hideDialog();

@@ -14,7 +14,8 @@
 - [x] Re-render wheel on window resize.
 - [ ] Pick a file to store wheel options.
     - [x] Load wheel options from the file.
-    - [ ] Create new file for wheel options.
+    - [x] Create new file for wheel options.
+    - [ ] Close opened file.
     - [ ] Update extension `.json -> .wheel`.
 - [ ] Improve UI
     - [ ] Show modal with a winner

@@ -10,8 +10,6 @@ use uuid::Uuid;
 
 use crate::color::Color;
 
-const FILE_NAME: &'static str = "../choices.json";
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Choice {
     pub id: Uuid,
@@ -75,9 +73,10 @@ impl Choice {
         Ok(choices)
     }
 
-    pub fn save_choices(choices: &Vec<Choice>) -> std::io::Result<()> {
+    pub fn save_choices(path: &str, choices: &Arc<[Choice]>) -> std::io::Result<()> {
+        let path = Path::new(path);
         let serialized_choices = serde_json::to_string(choices)?;
-        let mut file = File::create(FILE_NAME)?;
+        let mut file = File::create(path)?;
 
         file.write_all(serialized_choices.as_bytes())?;
 

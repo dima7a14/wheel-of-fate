@@ -72,3 +72,10 @@ export function invertColor(color) {
 	const { r, g, b } = fromHexToRGB(color);
 	return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? "#000000" : "#ffffff";
 }
+
+export function parseFileName(fullPath) {
+	const filenameWithExt = fullPath.replace(/^.*[\\/]/, "");
+	const index = filenameWithExt.lastIndexOf(".");
+
+	return filenameWithExt.slice(0, index);
+}

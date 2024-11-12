@@ -29,14 +29,18 @@ export class FileDialog extends EventEmitter {
 		this.#openBtn = openBtn;
 		this.#newBtn = newBtn;
 
-		openBtn.addEventListener("click", (event) => {
+		openBtn.addEventListener("click", () => {
 			backend
-				.openDialog()
-				.then(() => this.trigger(FILE_DIALOG_EVENTS.FILE_OPENED));
+				.openFile()
+				.then(() => this.trigger(FILE_DIALOG_EVENTS.FILE_OPENED))
+				.catch(console.warn);
 		});
 
-		newBtn.addEventListener("click", (event) => {
-			// 	TODO: handle new file creation
+		newBtn.addEventListener("click", () => {
+			backend
+				.newFile()
+				.then(() => this.trigger(FILE_DIALOG_EVENTS.FILE_CREATED))
+				.catch(console.warn);
 		});
 	}
 
