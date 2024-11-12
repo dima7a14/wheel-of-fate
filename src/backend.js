@@ -53,7 +53,7 @@ export const backend = {
 			canCreateDirectories: true,
 			multiple: false,
 			directory: false,
-			filters: [{ name: "Wheel choices", extensions: ["json"] }],
+			filters: [{ name: "Wheel choices", extensions: ["wheel"] }],
 		});
 
 		if (!filePath) {
@@ -65,7 +65,7 @@ export const backend = {
 	newFile: async () => {
 		const filePath = await save({
 			canCreateDirectories: true,
-			filters: [{ name: "Wheel choices", extensions: ["json"] }],
+			filters: [{ name: "Wheel choices", extensions: ["wheel"] }],
 		});
 
 		if (!filePath) {

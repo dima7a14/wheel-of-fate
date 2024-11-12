@@ -12,12 +12,13 @@
     - [x] Add one option to the state and to the JSON file.
     - [x] Remove an option from the state and from the JSON file.
 - [x] Re-render wheel on window resize.
-- [ ] Pick a file to store wheel options.
+- [x] Pick a file to store wheel options.
     - [x] Load wheel options from the file.
     - [x] Create new file for wheel options.
     - [x] Close opened file.
-    - [ ] Update extension `.json -> .wheel`.
+    - [x] Update extension `.json -> .wheel`.
 - [ ] Improve UI
     - [ ] Show modal with a winner
     - [ ] Add effects on spin
     - [ ] Improve look & feel of the whee with only one or zero options.
+- [ ] Add default config
