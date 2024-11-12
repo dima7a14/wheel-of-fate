@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 
 import { degreesToRadians, invertColor, randomBetween } from "./utils";
 import { Viewport, VIEWPORT_EVENTS } from "./viewport";
+import arrow from "./assets/arrow.png";
 
 export async function createWheel(el, initChoices) {
 	const viewport = new Viewport(el);
@@ -74,9 +75,7 @@ export async function createWheel(el, initChoices) {
 	};
 
 	viewport.on(VIEWPORT_EVENTS.RESIZE, ({ width, height }) => {
-		wheel.width = width;
-		wheel.height = height;
-		wheel.forceRender();
+		wheel.updateDims(width, height);
 	});
 
 	return {
@@ -96,6 +95,14 @@ class Wheel {
 		this.height = height;
 		this.container = new PIXI.Container();
 		this.choices = [];
+		this.head = new WheelHead();
+		this.container.addChild(this.head.container);
+		this.head.container.position.set(
+			this.width / 2 + this.radius - 10,
+			height / 2,
+		);
+		this.head.updateDims(this.width, this.height);
+		this.head.container.zIndex = Number.MAX_SAFE_INTEGER;
 	}
 
 	get radius() {
@@ -113,6 +120,17 @@ class Wheel {
 	rotate(delta) {
 		const rotation = this.#rotation + degreesToRadians(delta);
 		this.#rotation = rotation;
+		this.#shouldRender = true;
+	}
+
+	updateDims(width, height) {
+		this.width = width;
+		this.height = height;
+		this.head.container.position.set(
+			this.width / 2 + this.radius - 10,
+			height / 2,
+		);
+		this.head.updateDims(this.width, this.height);
 		this.#shouldRender = true;
 	}
 
@@ -224,13 +242,6 @@ class Label {
 			fontSize: this.fontSize,
 			fontWeight: 700,
 			fill: invertColor(bgColor),
-			// dropShadow: {
-			// 	alpha: 1,
-			// 	angle: 0,
-			// 	blur: 3,
-			// 	color: 0x000000,
-			// 	distance: 0,
-			// },
 		});
 		this.text = new PIXI.Text({ text: name, style });
 		this.container.addChild(this.text);
@@ -249,6 +260,49 @@ class Label {
 
 	destroy() {
 		this.text.destroy();
+		this.container.destroy();
+	}
+}
+
+class WheelHead {
+	#texture = null;
+	#sprite = null;
+	#maxSpriteSize = 128;
+	#size = 128;
+
+	constructor() {
+		this.container = new PIXI.Container();
+		this.loadTexture();
+	}
+
+	async loadTexture() {
+		this.#texture = await PIXI.Assets.load(arrow);
+		const sprite = new PIXI.Sprite(this.#texture);
+		sprite.rotation = Math.PI;
+		sprite.anchor.set(0.25, 0.5);
+		sprite.blendMode = PIXI.BLEND;
+		sprite.width = this.#size;
+		sprite.height = this.#size;
+		this.#sprite = sprite;
+		this.container.addChild(this.#sprite);
+	}
+
+	updateDims(containerWidth, containerHeight) {
+		let size = Math.min(containerWidth, containerHeight) * 0.25;
+
+		if (size > this.#maxSpriteSize) {
+			size = this.#maxSpriteSize;
+		}
+
+		if (this.#sprite) {
+			this.#sprite.width = size;
+			this.#sprite.height = size;
+		}
+	}
+
+	destroy() {
+		this.#sprite.destroy();
+		this.#texture.destroy();
 		this.container.destroy();
 	}
 }
