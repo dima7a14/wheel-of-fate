@@ -18,8 +18,8 @@
   },
   "productName": "wheel-of-fate",
   "mainBinaryName": "wheel-of-fate",
-  "version": "0.0.0",
-  "identifier": "com.tauri.dev",
+  "version": "0.1.0",
+  "identifier": "tech.nancy.wheel.dev",
   "plugins": {},
   "app": {
     "withGlobalTauri": true,

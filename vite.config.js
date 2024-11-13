@@ -25,6 +25,7 @@ export default defineConfig(async () => ({
 				: "safari13",
 		minify: !process.env.TAURI_ENV_DEBUG ? "esbuild" : false,
 		sourcemap: !!process.env.TAURI_ENV_DEBUG,
+		outDir: "../dist",
 	},
 	resolve: {
 		alias: {
