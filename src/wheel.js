@@ -1,4 +1,10 @@
 import * as PIXI from "pixi.js";
+import {
+	GlowFilter,
+	OutlineFilter,
+	MotionBlurFilter,
+	DropShadowFilter,
+} from "pixi-filters";
 
 import { degreesToRadians, invertColor, randomBetween, inRange } from "./utils";
 import { Viewport, VIEWPORT_EVENTS } from "./viewport";
@@ -78,12 +84,17 @@ const ROTATION_MIN_SPEED = 0.01;
 const ROTATION_MAX_SPEED = 1;
 const MIN_ROTATION = 8 * Math.PI;
 const MAX_ROTATION = 24 * Math.PI;
+const BLUR_SCALE = 30;
 
 class Wheel {
 	#shouldRender = true;
 	#rotation = INITIAL_ROTATION;
 	#ticker = null;
 	#targetRotation = INITIAL_ROTATION;
+	#motionBlurFilter = new MotionBlurFilter({
+		kernelSize: 15,
+		velocity: { x: 0, y: 0 },
+	});
 
 	constructor({ width, height, ticker }) {
 		this.width = width;
@@ -98,10 +109,22 @@ class Wheel {
 		);
 		this.head.updateDims(this.width, this.height);
 		this.head.container.zIndex = Number.MAX_SAFE_INTEGER;
+		this.innerCircle = new PIXI.Graphics();
+		this.innerCircle.zIndex = Number.MAX_SAFE_INTEGER;
+		this.container.addChild(this.innerCircle);
+
+		this.container.filters = [this.#motionBlurFilter];
+
+		this.#renderInnerCircle();
+
 		this.#ticker = ticker;
 
 		this.rotate = this.rotate.bind(this);
 		this.spin = this.spin.bind(this);
+	}
+
+	#updateBlur(value) {
+		this.#motionBlurFilter.velocity = { x: value, y: value };
 	}
 
 	get radius() {
@@ -129,6 +152,7 @@ class Wheel {
 		);
 		this.head.updateDims(this.width, this.height);
 		this.#shouldRender = true;
+		this.#renderInnerCircle();
 	}
 
 	addChoice(choice) {
@@ -163,6 +187,15 @@ class Wheel {
 		this.#shouldRender = true;
 	}
 
+	#renderInnerCircle() {
+		const { x, y } = this.center;
+		this.innerCircle
+			.clear()
+			.circle(x, y, this.radius * 0.1)
+			.stroke({ color: 0x000000, width: 4 })
+			.fill(0xffffff);
+	}
+
 	render() {
 		if (!this.#shouldRender) {
 			return;
@@ -180,6 +213,7 @@ class Wheel {
 			};
 			const isWinner = !this.isSpinning && inRange(angle, range);
 
+			choice.container.zIndex = isWinner ? this.choices.length : index;
 			choice.render({
 				x,
 				y,
@@ -233,11 +267,12 @@ class Wheel {
 			);
 			this.#rotation += speed;
 			this.#shouldRender = true;
+			this.#updateBlur(speed * BLUR_SCALE);
 		} else {
 			if (this.#rotation > this.#targetRotation) {
 				this.#rotation = this.#targetRotation;
 			}
-
+			this.#updateBlur(0);
 			this.#ticker.remove(this.rotate);
 			this.#shouldRender = true;
 		}
@@ -255,7 +290,16 @@ class Wheel {
 }
 
 class Choice {
-	#winnerScale = 1.1;
+	#winnerScale = 1.05;
+	#glowFilter = new GlowFilter({
+		distance: 15,
+		outerStrength: 2,
+		quality: 1,
+	});
+	#outlineFilter = new OutlineFilter({
+		color: 0x000000,
+		thickness: 2,
+	});
 
 	constructor(choice) {
 		this.id = choice.id;
@@ -264,11 +308,10 @@ class Choice {
 
 		this.container = new PIXI.Container();
 		this.graphics = new PIXI.Graphics();
+
 		this.label = new Label(this.name, this.color);
 		this.container.addChild(this.graphics);
 		this.container.addChild(this.label.container);
-
-		this.container.zIndex = 2;
 	}
 
 	#renderGraphics({ x, y, radius, startAngle, endAngle, color, isWinner }) {
@@ -278,6 +321,12 @@ class Choice {
 			.moveTo(x, y)
 			.arc(x, y, finalRadius, startAngle, endAngle)
 			.fill(color);
+
+		if (isWinner) {
+			this.graphics.filters = [this.#outlineFilter, this.#glowFilter];
+		} else {
+			this.graphics.filters = [this.#outlineFilter];
+		}
 	}
 
 	render({ x, y, radius, startAngle, endAngle, color, isWinner }) {
@@ -290,6 +339,7 @@ class Choice {
 			color,
 			isWinner,
 		});
+
 		this.label.render({ x, y, startAngle, endAngle, radius });
 	}
 
@@ -297,6 +347,8 @@ class Choice {
 		this.label.destroy();
 		this.graphics.destroy();
 		this.container.destroy();
+		this.#outlineFilter.destroy();
+		this.#glowFilter.destroy();
 	}
 }
 
@@ -338,8 +390,8 @@ class Label {
 class WheelHead {
 	#texture = null;
 	#sprite = null;
-	#maxSpriteSize = 128;
-	#size = 128;
+	#maxSpriteSize = 196;
+	#size = 196;
 
 	constructor() {
 		this.container = new PIXI.Container();
@@ -356,6 +408,17 @@ class WheelHead {
 		sprite.height = this.#size;
 		this.#sprite = sprite;
 		this.container.addChild(this.#sprite);
+		this.container.filters = [
+			new DropShadowFilter({
+				color: 0x000000,
+				blur: 3,
+				offset: { x: 1, y: 1 },
+			}),
+			new OutlineFilter({
+				color: 0x000000,
+				thickness: 2,
+			}),
+		];
 	}
 
 	updateDims(containerWidth, containerHeight) {

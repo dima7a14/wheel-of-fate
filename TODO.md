@@ -17,9 +17,10 @@
     - [x] Create new file for wheel options.
     - [x] Close opened file.
     - [x] Update extension `.json -> .wheel`.
-- [ ] Improve UI
-    - [ ] Show modal with a winner.
+- [x] Improve UI
+    - ~~[ ] Show modal with a winner.~~
     - [x] Add wheel head.
-    - [ ] Add effects on spin.
+    - [x] Add effects on spin.
     - [x] Improve look & feel of the whee with only one or zero options.
 - [ ] Add default config.
+- [ ] Add sound.
