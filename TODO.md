@@ -21,5 +21,5 @@
     - [ ] Show modal with a winner.
     - [x] Add wheel head.
     - [ ] Add effects on spin.
-    - [ ] Improve look & feel of the whee with only one or zero options.
+    - [x] Improve look & feel of the whee with only one or zero options.
 - [ ] Add default config.

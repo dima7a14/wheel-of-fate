@@ -27,7 +27,7 @@ export async function createWheel(el, initChoices) {
 	app.stage.eventMode = "static";
 	app.stage.hitArea = app.screen;
 
-	const wheel = new Wheel({ width, height });
+	const wheel = new Wheel({ width, height, ticker: app.ticker });
 
 	initChoices.forEach((choice) => {
 		wheel.addChoice(choice);
@@ -35,36 +35,14 @@ export async function createWheel(el, initChoices) {
 
 	app.stage.addChild(wheel.container);
 
-	let angle = 0;
-	let currentAngle = 0;
-	const MIN_SPEED = 1;
-	let isSpinning = false;
-
-	function spin() {
-		angle = angle + randomBetween(720, 36000);
-	}
-
 	el.appendChild(app.canvas);
 
 	app.ticker.add(() => {
-		if (currentAngle < angle) {
-			isSpinning = true;
-			const speed = Math.max((angle - currentAngle) / 100, MIN_SPEED);
-			currentAngle = Math.min(angle, currentAngle + speed);
-			wheel.rotate(speed);
-		} else if (isSpinning) {
-			const winner = wheel.getWinner();
-
-			isSpinning = false;
-		}
-
 		wheel.render();
 	});
 
 	app.stage.on("click", () => {
-		if (!isSpinning) {
-			spin();
-		}
+		wheel.spin();
 	});
 
 	const addChoice = (choice) => {
@@ -95,11 +73,19 @@ export async function createWheel(el, initChoices) {
 	};
 }
 
+const INITIAL_ROTATION = Math.PI;
+const ROTATION_MIN_SPEED = 0.01;
+const ROTATION_MAX_SPEED = 1;
+const MIN_ROTATION = 8 * Math.PI;
+const MAX_ROTATION = 24 * Math.PI;
+
 class Wheel {
 	#shouldRender = true;
-	#rotation = Math.PI;
+	#rotation = INITIAL_ROTATION;
+	#ticker = null;
+	#targetRotation = INITIAL_ROTATION;
 
-	constructor({ width, height }) {
+	constructor({ width, height, ticker }) {
 		this.width = width;
 		this.height = height;
 		this.container = new PIXI.Container();
@@ -112,6 +98,10 @@ class Wheel {
 		);
 		this.head.updateDims(this.width, this.height);
 		this.head.container.zIndex = Number.MAX_SAFE_INTEGER;
+		this.#ticker = ticker;
+
+		this.rotate = this.rotate.bind(this);
+		this.spin = this.spin.bind(this);
 	}
 
 	get radius() {
@@ -126,10 +116,8 @@ class Wheel {
 		return { x: this.width / 2, y: this.height / 2 };
 	}
 
-	rotate(delta) {
-		const rotation = this.#rotation + degreesToRadians(delta);
-		this.#rotation = rotation;
-		this.#shouldRender = true;
+	get isSpinning() {
+		return this.#rotation !== this.#targetRotation;
 	}
 
 	updateDims(width, height) {
@@ -175,10 +163,6 @@ class Wheel {
 		this.#shouldRender = true;
 	}
 
-	forceRender() {
-		this.#shouldRender = true;
-	}
-
 	render() {
 		if (!this.#shouldRender) {
 			return;
@@ -188,6 +172,13 @@ class Wheel {
 			const { x, y } = this.center;
 			const startAngle = this.#rotation + index * this.delta;
 			const endAngle = this.#rotation + (index + 1) * this.delta;
+			const fullCircles = Math.ceil(this.#rotation / (2 * Math.PI));
+			const angle = 2 * Math.PI * fullCircles;
+			const range = {
+				start: startAngle,
+				end: endAngle,
+			};
+			const isWinner = !this.isSpinning && inRange(angle, range);
 
 			choice.render({
 				x,
@@ -196,6 +187,7 @@ class Wheel {
 				endAngle,
 				color: choice.color,
 				radius: this.radius,
+				isWinner,
 			});
 		});
 
@@ -205,6 +197,9 @@ class Wheel {
 	getWinner() {
 		const fullCircles = Math.ceil(this.#rotation / (2 * Math.PI));
 		const angle = 2 * Math.PI * fullCircles;
+		let winner = {
+			index: -1,
+		};
 
 		for (let index = 0; index < this.choices.length; index++) {
 			const choice = this.choices[index];
@@ -216,14 +211,52 @@ class Wheel {
 			};
 
 			if (inRange(angle, range)) {
-				console.log("Winner!", choice.name);
+				winner = {
+					index,
+					id: choice.id,
+					name: choice.name,
+					color: choice.color,
+				};
 				break;
 			}
 		}
+
+		return winner;
+	}
+
+	rotate() {
+		if (this.#rotation < this.#targetRotation) {
+			const diff = (this.#targetRotation - this.#rotation) / 100;
+			const speed = Math.min(
+				Math.max(diff, ROTATION_MIN_SPEED),
+				ROTATION_MAX_SPEED,
+			);
+			this.#rotation += speed;
+			this.#shouldRender = true;
+		} else {
+			if (this.#rotation > this.#targetRotation) {
+				this.#rotation = this.#targetRotation;
+			}
+
+			this.#ticker.remove(this.rotate);
+			this.#shouldRender = true;
+		}
+	}
+
+	spin() {
+		if (this.isSpinning) {
+			return;
+		}
+
+		this.#targetRotation =
+			this.#rotation + randomBetween(MIN_ROTATION, MAX_ROTATION);
+		this.#ticker.add(this.rotate);
 	}
 }
 
 class Choice {
+	#winnerScale = 1.1;
+
 	constructor(choice) {
 		this.id = choice.id;
 		this.name = choice.name;
@@ -238,16 +271,25 @@ class Choice {
 		this.container.zIndex = 2;
 	}
 
-	#renderGraphics({ x, y, radius, startAngle, endAngle, color }) {
+	#renderGraphics({ x, y, radius, startAngle, endAngle, color, isWinner }) {
+		const finalRadius = isWinner ? radius * this.#winnerScale : radius;
 		this.graphics
 			.clear()
 			.moveTo(x, y)
-			.arc(x, y, radius, startAngle, endAngle)
+			.arc(x, y, finalRadius, startAngle, endAngle)
 			.fill(color);
 	}
 
-	render({ x, y, radius, startAngle, endAngle, color }) {
-		this.#renderGraphics({ x, y, radius, startAngle, endAngle, color });
+	render({ x, y, radius, startAngle, endAngle, color, isWinner }) {
+		this.#renderGraphics({
+			x,
+			y,
+			radius,
+			startAngle,
+			endAngle,
+			color,
+			isWinner,
+		});
 		this.label.render({ x, y, startAngle, endAngle, radius });
 	}
 
