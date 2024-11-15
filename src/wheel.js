@@ -38,7 +38,6 @@ export async function createWheel(el, initChoices) {
 	initChoices.forEach((choice) => {
 		wheel.addChoice(choice);
 	});
-
 	app.stage.addChild(wheel.container);
 
 	el.appendChild(app.canvas);
@@ -95,25 +94,42 @@ class Wheel {
 		kernelSize: 15,
 		velocity: { x: 0, y: 0 },
 	});
+	#placeholder = null;
+	#shouldShowWinner = false;
+	#choicesContainer = null;
 
 	constructor({ width, height, ticker }) {
 		this.width = width;
 		this.height = height;
 		this.container = new PIXI.Container();
+
 		this.choices = [];
+		this.#choicesContainer = new PIXI.Container();
+		this.#choicesContainer.filters = [this.#motionBlurFilter];
+		const rect = new PIXI.Rectangle(0, 0, width, height);
+		this.#choicesContainer.boundsArea = rect;
+		this.container.addChild(this.#choicesContainer);
+
+		this.#placeholder = new Choice({
+			id: "PLACEHOLDER",
+			name: "Add any options",
+			color: "#8ba9cd",
+		});
+		this.#placeholder.container.visible = false;
+		this.container.addChild(this.#placeholder.container);
+
 		this.head = new WheelHead();
-		this.container.addChild(this.head.container);
 		this.head.container.position.set(
 			this.width / 2 + this.radius - 10,
 			height / 2,
 		);
 		this.head.updateDims(this.width, this.height);
 		this.head.container.zIndex = Number.MAX_SAFE_INTEGER;
+		this.container.addChild(this.head.container);
+
 		this.innerCircle = new PIXI.Graphics();
 		this.innerCircle.zIndex = Number.MAX_SAFE_INTEGER;
 		this.container.addChild(this.innerCircle);
-
-		this.container.filters = [this.#motionBlurFilter];
 
 		this.#renderInnerCircle();
 
@@ -146,6 +162,8 @@ class Wheel {
 	updateDims(width, height) {
 		this.width = width;
 		this.height = height;
+		const rect = new PIXI.Rectangle(0, 0, width, height);
+		this.#choicesContainer.boundsArea = rect;
 		this.head.container.position.set(
 			this.width / 2 + this.radius - 10,
 			height / 2,
@@ -159,7 +177,8 @@ class Wheel {
 		const choiceComponent = new Choice(choice);
 
 		this.choices.push(choiceComponent);
-		this.container.addChild(choiceComponent.container);
+		this.#choicesContainer.addChild(choiceComponent.container);
+		this.#shouldShowWinner = false;
 		this.#shouldRender = true;
 	}
 
@@ -173,6 +192,7 @@ class Wheel {
 		const [choiceToRemove] = this.choices.splice(index, 1);
 
 		choiceToRemove.destroy();
+		this.#shouldShowWinner = false;
 		this.#shouldRender = true;
 	}
 
@@ -184,6 +204,7 @@ class Wheel {
 		}
 
 		this.choices = [];
+		this.#shouldShowWinner = false;
 		this.#shouldRender = true;
 	}
 
@@ -196,10 +217,39 @@ class Wheel {
 			.fill(0xffffff);
 	}
 
+	#renderPlaceholder() {
+		const { x, y } = this.center;
+		const startAngle = Math.PI;
+		const endAngle = 3 * Math.PI;
+
+		this.#placeholder.render({
+			x,
+			y,
+			startAngle,
+			endAngle,
+			color: this.#placeholder.color,
+			radius: this.radius,
+			isWinner: false,
+		});
+	}
+
 	render() {
 		if (!this.#shouldRender) {
 			return;
 		}
+
+		if (this.choices.length === 0) {
+			this.head.hide();
+			this.innerCircle.visible = false;
+			this.#renderPlaceholder();
+			this.#placeholder.container.visible = true;
+			this.#shouldRender = false;
+			return;
+		}
+
+		this.head.show();
+		this.innerCircle.visible = true;
+		this.#placeholder.container.visible = false;
 
 		this.choices.forEach((choice, index) => {
 			const { x, y } = this.center;
@@ -211,7 +261,10 @@ class Wheel {
 				start: startAngle,
 				end: endAngle,
 			};
-			const isWinner = !this.isSpinning && inRange(angle, range);
+			const isWinner =
+				this.#shouldShowWinner &&
+				!this.isSpinning &&
+				inRange(angle, range);
 
 			choice.container.zIndex = isWinner ? this.choices.length : index;
 			choice.render({
@@ -279,6 +332,8 @@ class Wheel {
 	}
 
 	spin() {
+		this.#shouldShowWinner = true;
+
 		if (this.isSpinning) {
 			return;
 		}
@@ -294,7 +349,7 @@ class Choice {
 	#glowFilter = new GlowFilter({
 		distance: 15,
 		outerStrength: 2,
-		quality: 1,
+		quality: 0.1,
 	});
 	#outlineFilter = new OutlineFilter({
 		color: 0x000000,
@@ -428,9 +483,11 @@ class WheelHead {
 			size = this.#maxSpriteSize;
 		}
 
+		this.#size = size;
+
 		if (this.#sprite) {
-			this.#sprite.width = size;
-			this.#sprite.height = size;
+			this.#sprite.width = this.#size;
+			this.#sprite.height = this.#size;
 		}
 	}
 
@@ -438,5 +495,13 @@ class WheelHead {
 		this.#sprite.destroy();
 		this.#texture.destroy();
 		this.container.destroy();
+	}
+
+	show() {
+		this.container.visible = true;
+	}
+
+	hide() {
+		this.container.visible = false;
 	}
 }
